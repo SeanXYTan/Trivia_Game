@@ -19,45 +19,52 @@ class QuestionLibrary:
     """
     def __init__(self, filename="trivia.json"):
         self.questions = []
-        self.categories = set()
 
         with open(filename, "r", encoding = "utf-8") as opened_file:
             data = json.load(opened_file)
 
         for qsn in data:
-            self.categories.add(qsn["category"])
             self.questions.append(Question(qsn["question"], qsn["correct_answer"], qsn["incorrect_answers"], qsn["category"], qsn["difficulty"]))
 
         random.shuffle(self.questions)
 
-    def get_questions(self, category: str='', difficulty: str='', number: int=1) -> list:
+    def __len__(self) -> int:
+        return len(self.questions)
+
+    def get_categories(self) -> set:
+        """Gets the categories that are in the total list of questions
+        and creates a set that does not repeat categories
+
+        Returns:
+            categories (set): a list of categories the questions in <self.questions> have
+        """
+        categories = set()
+        for qsn in self.questions:
+            categories.add(qsn.category)
+        return categories
+
+    def get_questions(self, category=None, difficulty=None, number: int=10) -> list:
         """Retrieves questions from the list that fit the parameters given
 
         Args:
-            category (str): the category of the question
-            difficulty (str): the difficulty of the question
+            category (None): the category of the question
+            difficulty (None): the difficulty of the question
             number (int, optional): The number of questions requested
 
         Returns:
-            list: The first few questions that were requested are stored in a list and returned
+            q_list (list): The first few questions that were requested are stored in a list.
         """
-        difficulties = ["easy", "medium", "hard"]
-        filtered_questions = []
+        if isinstance(category, int) is True:
+            for idx, cat in enumerate(self.get_categories()):
+                if idx+1 == category:
+                    category = cat
 
-        for trivia in self.questions:
-            if category.capitalize() == trivia.category and difficulty.lower() == trivia.difficulty:
-                filtered_questions.append(trivia)
-            elif (category.capitalize() == trivia.category
-                    and difficulty.lower() not in difficulties):
-                filtered_questions.append(trivia)
-            elif (category.capitalize() not in self.categories
-                    and difficulty.lower() == trivia.difficulty):
-                filtered_questions.append(trivia)
-            elif (category.capitalize() not in self.categories
-                    and difficulty.lower() not in difficulties):
-                filtered_questions.append(trivia)
-            else:
-                pass
+        filtered_questions = self.questions.copy()
+
+        if difficulty in ("easy", "medium", "hard"):
+            filtered_questions = [qst for qst in filtered_questions if qst.difficulty == difficulty]
+        if category in self.get_categories():
+            filtered_questions = [qst for qst in filtered_questions if qst.category == category]
 
         q_list = []
         if number <= len(filtered_questions):
@@ -67,7 +74,3 @@ class QuestionLibrary:
             q_list = filtered_questions
 
         return q_list
-
-
-if __name__ == "__main__":
-    f = QuestionLibrary()

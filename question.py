@@ -31,14 +31,33 @@ class Question:
         else:
             raise AttributeError
 
-    def as_string(self) -> str:
-        """Takes the trivia's question and answers and returns a string containing all of them
+    def __str__(self) -> str:
+        m_string = f"{self.question}"
+        for index, answer in enumerate(self.answers):
+            string = "\n" + str(index+1) + " " + answer
+            m_string += string
+        return m_string
+
+    def get_score(self, time: float) -> int:
+        """Gets the score based on the time elapsed and the difficulty of the question.
+
+        Args:
+            time (float): The time elapsed for the question.
 
         Returns:
-            (str): The string that has the trivia's question and answer choices.
+            score (int): The score that's been calculated.
         """
-        m_string = [self.question]
-        for index, answer in enumerate(self.answers):
-            string = str(index + 1) + " " + answer
-            m_string.append(string)
-        return '\n'.join(map(str, m_string))
+
+        if self.difficulty == "easy":
+            diff = 1
+        elif self.difficulty == "medium":
+            diff = 2
+        elif self.difficulty == "hard":
+            diff = 3
+
+        if time > 5.0:
+            score = diff * 10
+        else:
+            score = diff * (225//time - 7 * time)
+
+        return score
